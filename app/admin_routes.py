@@ -37,3 +37,18 @@ def approve_company(company_id: str):
     db.commit()
 
     return {"message": "Company approved successfully"}
+@router.get("/admin/analytics")
+def analytics():
+    db = SessionLocal()
+
+    total_students = db.query(Student).count()
+    total_companies = db.query(Company).count()
+    total_jobs = db.query(Job).count()
+    total_applications = db.query(Application).count()
+
+    return {
+        "total_students": total_students,
+        "total_companies": total_companies,
+        "total_jobs": total_jobs,
+        "total_applications": total_applications
+    }
