@@ -1,0 +1,88 @@
+from fastapi import APIRouter, UploadFile, File
+from app.database import SessionLocal
+from app.models.student import Student
+from app.models.application import Application
+from passlib.hash import bcrypt
+import shutil
+import os
+
+router = APIRouter()
+
+@router.post("/students/register")
+def register(student: dict):
+    db = SessionLocal()
+
+
+    new_student = Student(
+        name=student["name"],
+        email=student["email"],
+        password=bcrypt.hash(student["password"]),
+        cgpa=student["cgpa"],
+        branch=student["branch"],
+        graduation_year=student["graduation_year"]
+    )
+
+    db.add(new_student)
+    db.commit()
+    db.close()
+
+    return {"message": "Student registered successfully"}
+
+
+@router.post("/students/login")
+def login(data: dict):
+    db = SessionLocal()
+
+
+    student = db.query(Student).filter(
+        Student.email == data["email"]
+    ).first()
+
+    if not student or not bcrypt.verify(
+        data["password"],
+        student.password
+    ):
+        return {"error": "Invalid credentials"}
+
+    return {
+        "token": create_token({
+            "id": student.id,
+            "role": "student"
+        })
+    }
+
+
+@router.post("/resume/upload")
+def upload_resume(file: UploadFile = File(...)):
+    os.makedirs("uploads", exist_ok=True)
+
+
+    path = f"uploads/{file.filename}"
+
+    with open(path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {"resume_url": path}
+
+
+@router.get("/test")
+def test():
+    return {"message": "Student routes working"}
+
+@router.post("/jobs/{job_id}/apply")
+def apply_job(job_id: str, student_id: str):
+    db = SessionLocal()
+
+
+    new_application = Application(
+        student_id=student_id,
+        job_id=job_id,
+        status="Applied"
+    )
+
+    db.add(new_application)
+    db.commit()
+    db.close()
+
+    return {"message": "Applied successfully"}
+
