@@ -51,7 +51,8 @@ def login(data: dict):
     }
 # Create Job
 @router.post("/jobs")
-def create_job(job: dict):
+def create_job(job: dict,
+    user=Depends(get_current_user):
     db = SessionLocal()
 
     new_job = Job(
