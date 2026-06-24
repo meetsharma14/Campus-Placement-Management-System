@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.get("/admin/students")
-def get_students():
+def get_students(user=Depends(get_current_user)):
     db = SessionLocal()
     students = db.query(Student).all()
     return students
