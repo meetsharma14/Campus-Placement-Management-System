@@ -56,7 +56,8 @@ def login(data: dict):
 
 
 @router.post("/resume/upload")
-def upload_resume(file: UploadFile = File(...)):
+def upload_resume(file: UploadFile,
+    user=Depends(get_current_user)):
     os.makedirs("uploads", exist_ok=True)
 
 
@@ -109,21 +110,5 @@ def get_student(student_id: int):
         return {"error": "Student not found"}
 
     return student
-@router.post("/resume/upload/protected")
-def upload_resume_protected(
-    file: UploadFile = File(...),
-    user=Depends(get_current_user)
-):
-    os.makedirs("uploads", exist_ok=True)
 
-    path = f"uploads/{file.filename}"
-
-    with open(path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    return {
-        "message": "Resume uploaded successfully",
-        "resume_url": path,
-        "student_id": user["id"]
-    }
 
