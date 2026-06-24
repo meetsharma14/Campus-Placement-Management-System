@@ -74,7 +74,11 @@ def test():
     return {"message": "Student routes working"}
 
 @router.post("/jobs/{job_id}/apply")
-def apply_job(job_id: str, student_id: str):
+def apply_job(
+    job_id: str,
+    student_id: int,
+    user=Depends(get_current_user)
+):
     db = SessionLocal()
 
 
