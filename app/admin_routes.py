@@ -52,3 +52,22 @@ def analytics():
         "total_jobs": total_jobs,
         "total_applications": total_applications
     }
+@router.put("/admin/applications/{application_id}")
+def update_application_status(application_id: int, status: str):
+    db = SessionLocal()
+
+    application = db.query(Application).filter(
+        Application.id == application_id
+    ).first()
+
+    if not application:
+        return {"error": "Application not found"}
+
+    application.status = status
+    db.commit()
+    db.close()
+
+    return {
+        "message": "Application status updated",
+        "new_status": status
+    }
