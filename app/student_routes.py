@@ -5,6 +5,7 @@ from app.models.application import Application
 from passlib.hash import bcrypt
 import shutil
 import os
+from app.models.application import Application
 
 router = APIRouter()
 
@@ -85,4 +86,13 @@ def apply_job(job_id: str, student_id: str):
     db.close()
 
     return {"message": "Applied successfully"}
+@router.get("/students/{student_id}/applications")
+def get_my_applications(student_id: int):
+    db = SessionLocal()
+
+    applications = db.query(Application).filter(
+        Application.student_id == student_id
+    ).all()
+
+    return applications
 
