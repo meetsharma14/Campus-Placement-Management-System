@@ -95,4 +95,15 @@ def get_my_applications(student_id: int):
     ).all()
 
     return applications
+@router.get("/students/{student_id}")
+def get_student(student_id: int):
+    db = SessionLocal()
 
+    student = db.query(Student).filter(
+        Student.id == student_id
+    ).first()
+
+    if not student:
+        return {"error": "Student not found"}
+
+    return student
