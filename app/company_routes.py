@@ -4,6 +4,7 @@ from app.models.company import Company
 from app.utils.jwt_handler import create_token
 from passlib.hash import bcrypt
 from app.models.job import Job
+from app.utils.auth import get_current_user, require_role
 
 router = APIRouter()
 
