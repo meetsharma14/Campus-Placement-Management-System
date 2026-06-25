@@ -76,8 +76,8 @@ def test():
 @router.post("/jobs/{job_id}/apply")
 def apply_job(
     job_id: str,
-    student_id: int,
-    user=Depends(get_current_user)
+    student_id: user["id"],
+    user=Depends(require_role("student"))
 ):
     db = SessionLocal()
 
