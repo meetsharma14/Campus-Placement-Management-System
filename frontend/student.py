@@ -3,13 +3,22 @@ import requests
 
 API_URL = "http://127.0.0.1:8001"
 
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+    
 def show():
     st.header("Student Portal")
 
-    option = st.selectbox(
-        "Choose",
-        ["Register", "Login", "View Jobs"],
-        key="student_option"
+    if st.session_state["logged_in"]:
+        option = st.selectbox(
+            "Choose",
+            ["View Jobs", "Apply Job", "My Applications", "Logout"]
+        )
+    else:
+        option = st.selectbox(
+            "Choose",
+            ["Register", "Login"],
+            key="student_option"
     )
 
     if option == "Register":
@@ -58,7 +67,9 @@ def show():
 
             if "token" in data:
                 st.session_state["token"] = data["token"]
+                st.session_state["logged_in"] = True
                 st.success("Login successful")
+                st.rerun()
             else:
                 st.error("Invalid credentials")
             
@@ -67,4 +78,11 @@ def show():
 
     elif option == "View Jobs":
         res = requests.get(f"{API_URL}/jobs")
+        st.json(res.json())
+    elif option == "Logout":
+        st.session_state.clear()
+        st.success("Logged out")
+        st.rerun()
+
+
         st.json(res.json())
