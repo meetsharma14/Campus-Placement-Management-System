@@ -9,14 +9,14 @@ router = APIRouter()
 
 
 @router.get("/admin/students")
-def get_students(user=Depends(get_current_user)):
+def get_students(user=Depends(require_role("admin"))):
     db = SessionLocal()
     students = db.query(Student).all()
     return students
 
 
 @router.get("/admin/companies")
-def get_companies():
+def get_companies(user=Depends(require_role("admin"))):
     db = SessionLocal()
     companies = db.query(Company).all()
     return companies
