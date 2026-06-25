@@ -2,12 +2,10 @@ import streamlit as st
 import requests
 
 API_URL = "http://127.0.0.1:8001"
-
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-    
 def show():
-    st.header("Student Portal")
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+        st.header("Student Portal")
 
     if st.session_state["logged_in"]:
         option = st.selectbox(
