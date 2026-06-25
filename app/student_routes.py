@@ -7,7 +7,7 @@ import shutil
 import os
 from app.models.application import Application
 from fastapi import Depends
-from app.utils.auth import get_current_user
+from app.utils.auth import get_current_user, require_role
 
 router = APIRouter()
 
