@@ -4,6 +4,7 @@ from app.models.company import Company
 from app.models.student import Student
 from app.models.job import Job
 from app.models.application import Application
+from app.utils.auth import get_current_user, require_role
 
 router = APIRouter()
 
