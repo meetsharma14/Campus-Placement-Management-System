@@ -52,7 +52,7 @@ def login(data: dict):
 # Create Job
 @router.post("/jobs")
 def create_job(job: dict,
-    user=Depends(get_current_user):
+    user=Depends(require_role("company"))):
     db = SessionLocal()
 
     new_job = Job(
