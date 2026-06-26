@@ -5,7 +5,6 @@ from app.models.application import Application
 from passlib.hash import bcrypt
 import shutil
 import os
-from app.models.application import Application
 from fastapi import Depends
 from app.utils.auth import get_current_user, require_role
 from app.utils.jwt_handler import create_token
@@ -37,7 +36,6 @@ def register(student: dict):
 def login(data: dict):
     db = SessionLocal()
 
-
     student = db.query(Student).filter(
         Student.email == data["email"]
     ).first()
@@ -46,13 +44,18 @@ def login(data: dict):
         data["password"],
         student.password
     ):
+        db.close()
         return {"error": "Invalid credentials"}
 
+    token = create_token({
+        "id": student.id,
+        "role": "student"
+    })
+
+    db.close()
+
     return {
-        "token": create_token({
-            "id": student.id,
-            "role": "student"
-        })
+        "token": token
     }
 
 
@@ -68,7 +71,6 @@ def upload_resume(file: UploadFile,
         shutil.copyfileobj(file.file, buffer)
 
     return {"resume_url": path}
-
 
 @router.get("/test")
 def test():
@@ -100,7 +102,8 @@ def get_my_applications(student_id: int):
     applications = db.query(Application).filter(
         Application.student_id == student_id
     ).all()
-
+    
+    db.close()
     return applications
 @router.get("/students/{student_id}")
 def get_student(student_id: int):
@@ -111,8 +114,8 @@ def get_student(student_id: int):
     ).first()
 
     if not student:
+        db.close()
         return {"error": "Student not found"}
-
+    db.close()
     return student
-
 
