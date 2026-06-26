@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from fastapi import Depends, HTTPException, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.utils.jwt_handler import verify_token
@@ -25,3 +26,16 @@ def require_role(role: str):
             )
         return user
     return role_checker
+=======
+from fastapi import Header
+from app.utils.jwt_handler import verify_token
+
+
+def get_current_user(token: str = Header(...)):
+    payload = verify_token(token)
+
+    if not payload:
+        return {"error": "Invalid token"}
+
+    return payload
+>>>>>>> 9ae8fc84428353b2bcc0126879f357f56f165a61
