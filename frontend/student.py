@@ -2,10 +2,13 @@ import streamlit as st
 import requests
 
 API_URL = "http://127.0.0.1:8001"
+
+
 def show():
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
-        st.header("Student Portal")
+
+    st.header("Student Portal")
 
     if st.session_state["logged_in"]:
         option = st.selectbox(
@@ -17,16 +20,13 @@ def show():
             "Choose",
             ["Register", "Login"],
             key="student_option"
-    )
+        )
 
+    # Register
     if option == "Register":
         name = st.text_input("Name", key="reg_name")
         email = st.text_input("Email", key="reg_email")
-        password = st.text_input(
-            "Password",
-            type="password",
-            key="reg_password"
-        )
+        password = st.text_input("Password", type="password", key="reg_password")
         cgpa = st.number_input("CGPA", key="reg_cgpa")
         branch = st.text_input("Branch", key="reg_branch")
         year = st.number_input("Graduation Year", key="reg_year")
@@ -48,6 +48,7 @@ def show():
 
             st.json(res.json())
 
+    # Login
     elif option == "Login":
         email = st.text_input("Email", key="login_email")
         password = st.text_input("Password", type="password", key="login_password")
@@ -70,17 +71,14 @@ def show():
                 st.rerun()
             else:
                 st.error("Invalid credentials")
-            
-            
-            
 
+    # View Jobs
     elif option == "View Jobs":
         res = requests.get(f"{API_URL}/jobs")
         st.json(res.json())
+
+    # Logout
     elif option == "Logout":
         st.session_state.clear()
         st.success("Logged out")
         st.rerun()
-
-
-        st.json(res.json())
