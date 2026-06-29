@@ -1,20 +1,32 @@
-<<<<<<< HEAD
 from fastapi import APIRouter, Depends
 from app.database import SessionLocal
 from app.models.company import Company
 from app.models.student import Student
 from app.models.job import Job
 from app.models.application import Application
-from app.utils.auth import get_current_user, require_role
-
+from app.utils.auth import require_role
+from app.utils.jwt_handler import create_token
 
 router = APIRouter()
 
 
+@router.post("/admin/login")
+def admin_login(data: dict):
+    if data["email"] == "admin@gmail.com" and data["password"] == "admin123":
+        token = create_token({
+            "id": 0,
+            "role": "admin"
+        })
+        return {"token": token}
+
+    return {"error": "Invalid admin credentials"}
+
+
 @router.get("/admin/students")
-def get_students (user=Depends(require_role("admin"))):
+def get_students(user=Depends(require_role("admin"))):
     db = SessionLocal()
     students = db.query(Student).all()
+    db.close()
     return students
 
 
@@ -22,11 +34,12 @@ def get_students (user=Depends(require_role("admin"))):
 def get_companies(user=Depends(require_role("admin"))):
     db = SessionLocal()
     companies = db.query(Company).all()
-    return db.query(companies).all()
+    db.close()
+    return companies
 
 
 @router.put("/admin/companies/{company_id}/approve")
-def approve_company(company_id: str,user=Depends(require_role("admin"))):
+def approve_company(company_id: str, user=Depends(require_role("admin"))):
     db = SessionLocal()
 
     company = db.query(Company).filter(
@@ -34,29 +47,61 @@ def approve_company(company_id: str,user=Depends(require_role("admin"))):
     ).first()
 
     if not company:
+        db.close()
         return {"error": "Company not found"}
 
     company.approved = True
     db.commit()
+    db.close()
 
     return {"message": "Company approved successfully"}
+
+# delete company
+@router.delete("/admin/companies/{company_id}")
+def delete_company(
+    company_id: str,
+    user=Depends(require_role("admin"))
+):
+    db = SessionLocal()
+
+    company = db.query(Company).filter(
+        Company.id == company_id
+    ).first()
+
+    if not company:
+        db.close()
+        return {"error": "Company not found"}
+
+    db.delete(company)
+    db.commit()
+    db.close()
+
+    return {
+        "message": "Company deleted successfully"
+    }
+
+
 @router.get("/admin/analytics")
 def analytics(user=Depends(require_role("admin"))):
     db = SessionLocal()
 
-    total_students = db.query(Student).count()
-    total_companies = db.query(Company).count()
-    total_jobs = db.query(Job).count()
-    total_applications = db.query(Application).count()
-
-    return {
-        "total_students": total_students,
-        "total_companies": total_companies,
-        "total_jobs": total_jobs,
-        "total_applications": total_applications
+    data = {
+        "total_students": db.query(Student).count(),
+        "total_companies": db.query(Company).count(),
+        "total_jobs": db.query(Job).count(),
+        "total_applications": db.query(Application).count()
     }
+
+    db.close()
+    return data
+
+
 @router.put("/admin/applications/{application_id}")
-def update_application_status(application_id: int, status: str,user=Depends(require_role("admin"))):
+def update_application_status(
+    application_id: int,
+    status: str,
+    user=Depends(require_role("admin"))
+):
     db = SessionLocal()
 
     application = db.query(Application).filter(
@@ -64,6 +109,7 @@ def update_application_status(application_id: int, status: str,user=Depends(requ
     ).first()
 
     if not application:
+        db.close()
         return {"error": "Application not found"}
 
     application.status = status
@@ -74,81 +120,3 @@ def update_application_status(application_id: int, status: str,user=Depends(requ
         "message": "Application status updated",
         "new_status": status
     }
-=======
-from fastapi import APIRouter, Depends
-from app.database import SessionLocal
-from app.models.company import Company
-from app.models.student import Student
-from app.models.job import Job
-from app.models.application import Application
-from app.utils.auth import get_current_user, require_role
-
-
-router = APIRouter()
-
-
-@router.get("/admin/students")
-def get_students (user=Depends(require_role("admin"))):
-    db = SessionLocal()
-    students = db.query(Student).all()
-    return students
-
-
-@router.get("/admin/companies")
-def get_companies(user=Depends(require_role("admin"))):
-    db = SessionLocal()
-    companies = db.query(Company).all()
-    return db.query(companies).all()
-
-
-@router.put("/admin/companies/{company_id}/approve")
-def approve_company(company_id: str,user=Depends(require_role("admin"))):
-    db = SessionLocal()
-
-    company = db.query(Company).filter(
-        Company.id == company_id
-    ).first()
-
-    if not company:
-        return {"error": "Company not found"}
-
-    company.approved = True
-    db.commit()
-
-    return {"message": "Company approved successfully"}
-@router.get("/admin/analytics")
-def analytics(user=Depends(require_role("admin"))):
-    db = SessionLocal()
-
-    total_students = db.query(Student).count()
-    total_companies = db.query(Company).count()
-    total_jobs = db.query(Job).count()
-    total_applications = db.query(Application).count()
-
-    return {
-        "total_students": total_students,
-        "total_companies": total_companies,
-        "total_jobs": total_jobs,
-        "total_applications": total_applications
-    }
-@router.put("/admin/applications/{application_id}")
-def update_application_status(application_id: int, status: str,user=Depends(require_role("admin"))):
-    db = SessionLocal()
-
-    application = db.query(Application).filter(
-        Application.id == application_id
-    ).first()
-
-    if not application:
-        return {"error": "Application not found"}
-
-    application.status = status
-    db.commit()
-    db.close()
-
-    return {
-        "message": "Application status updated",
-        "new_status": status
-    }
-
->>>>>>> 9ae8fc84428353b2bcc0126879f357f56f165a61
