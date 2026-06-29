@@ -1,39 +1,58 @@
-<<<<<<< HEAD
 import streamlit as st
 import requests
 
 API_URL = "http://127.0.0.1:8001"
 
+
 def show():
     st.header("Company Portal")
 
-    option = st.selectbox(
-        "Choose",
-        ["Register", "Login", "Create Job"]
-    )
+    # Session setup
+    if "company_logged_in" not in st.session_state:
+        st.session_state["company_logged_in"] = False
 
+    # Always define token
+    token = st.session_state.get("token", None)
+
+    headers = {}
+    if token:
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+
+    # Menu
+    if st.session_state["company_logged_in"]:
+        option = st.selectbox(
+            "Choose",
+            ["Create Job"]
+        )
+    else:
+        option = st.selectbox(
+            "Choose",
+            ["Register", "Login"]
+        )
+
+    # Register
     if option == "Register":
-        company_name = st.text_input("Company Name", key="company_name")
-        hr_email = st.text_input("HR Email", key="company_email")
-        password = st.text_input("Password", type="password", key="company_password")
+        company_name = st.text_input("Company Name")
+        hr_email = st.text_input("HR Email")
+        password = st.text_input("Password", type="password")
 
         if st.button("Register"):
-            data = {
-                "company_name": company_name,
-                "hr_email": hr_email,
-                "password": password
-            }
-
             res = requests.post(
                 f"{API_URL}/companies/register",
-                json=data
+                json={
+                    "company_name": company_name,
+                    "hr_email": hr_email,
+                    "password": password
+                }
             )
-
             st.json(res.json())
 
+    # Login
     elif option == "Login":
-        hr_email = st.text_input("HR Email", key="login_email")
-        password = st.text_input("Password", type="password", key="login_password")
+        hr_email = st.text_input("HR Email")
+        password = st.text_input("Password", type="password")
 
         if st.button("Login"):
             res = requests.post(
@@ -44,97 +63,46 @@ def show():
                 }
             )
 
-            st.json(res.json())
+            data = res.json()
 
+            if "token" in data:
+                st.session_state["token"] = data["token"]
+                st.session_state["role"] = "company"
+                st.session_state["company_logged_in"] = True
+                st.success("Login successful")
+                st.rerun()
+            else:
+                st.error("Invalid credentials")
+
+    # Create Job
     elif option == "Create Job":
-        title = st.text_input("Job Title", key="job_title")
-        description = st.text_area("Description", key="job_desc")
+        title = st.text_input("Job Title")
+        description = st.text_area("Description")
         min_cgpa = st.number_input("Minimum CGPA")
-        branch = st.text_input("Branch", key="job_branch")
+        branch = st.text_input("Branch")
         salary = st.number_input("Salary")
 
         if st.button("Create Job"):
-            data = {
-                "title": title,
-                "description": description,
-                "min_cgpa": min_cgpa,
-                "branch": branch,
-                "salary": salary
-            }
-
             res = requests.post(
                 f"{API_URL}/jobs",
-                json=data
-            )
-
-=======
-import streamlit as st
-import requests
-
-API_URL = "http://127.0.0.1:8001"
-
-def show():
-    st.header("Company Portal")
-
-    option = st.selectbox(
-        "Choose",
-        ["Register", "Login", "Create Job"]
-    )
-
-    if option == "Register":
-        company_name = st.text_input("Company Name", key="company_name")
-        hr_email = st.text_input("HR Email", key="company_email")
-        password = st.text_input("Password", type="password", key="company_password")
-
-        if st.button("Register"):
-            data = {
-                "company_name": company_name,
-                "hr_email": hr_email,
-                "password": password
-            }
-
-            res = requests.post(
-                f"{API_URL}/companies/register",
-                json=data
-            )
-
-            st.json(res.json())
-
-    elif option == "Login":
-        hr_email = st.text_input("HR Email", key="login_email")
-        password = st.text_input("Password", type="password", key="login_password")
-
-        if st.button("Login"):
-            res = requests.post(
-                f"{API_URL}/companies/login",
                 json={
-                    "hr_email": hr_email,
-                    "password": password
-                }
+                    "title": title,
+                    "description": description,
+                    "min_cgpa": min_cgpa,
+                    "branch": branch,
+                    "salary": salary
+                },
+                headers=headers
             )
 
             st.json(res.json())
 
-    elif option == "Create Job":
-        title = st.text_input("Job Title", key="job_title")
-        description = st.text_area("Description", key="job_desc")
-        min_cgpa = st.number_input("Minimum CGPA")
-        branch = st.text_input("Branch", key="job_branch")
-        salary = st.number_input("Salary")
+    # Logout
+    # Sidebar logout
+    if st.session_state["company_logged_in"]:
+        if st.sidebar.button("Logout"):
+            st.session_state.clear()
+            st.success("Logged out successfully")
+            st.rerun()
 
-        if st.button("Create Job"):
-            data = {
-                "title": title,
-                "description": description,
-                "min_cgpa": min_cgpa,
-                "branch": branch,
-                "salary": salary
-            }
 
-            res = requests.post(
-                f"{API_URL}/jobs",
-                json=data
-            )
-
->>>>>>> 9ae8fc84428353b2bcc0126879f357f56f165a61
-            st.json(res.json())
