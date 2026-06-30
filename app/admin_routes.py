@@ -120,3 +120,50 @@ def update_application_status(
         "message": "Application status updated",
         "new_status": status
     }
+@router.delete("/admin/jobs/{job_id}")
+def delete_job(
+    job_id: str,
+    user=Depends(require_role("admin"))
+):
+    db = SessionLocal()
+
+    job = db.query(Job).filter(
+        Job.id == job_id
+    ).first()
+
+    if not job:
+        db.close()
+        return {"error": "Job not found"}
+
+    db.delete(job)
+    db.commit()
+    db.close()
+
+    return {"message": "Job deleted successfully"}
+@router.get("/admin/applications")
+def get_all_applications(
+    user=Depends(require_role("admin"))
+):
+    db = SessionLocal()
+
+    applications = (
+        db.query(Application, Student, Job, Company)
+        .join(Student, Application.student_id == Student.id)
+        .join(Job, Application.job_id == Job.id)
+        .join(Company, Job.company_id == Company.id)
+        .all()
+    )
+
+    result = []
+
+    for app, student, job, company in applications:
+        result.append({
+            "id": app.id,
+            "student_name": student.name,
+            "company_name": company.company_name,
+            "job_title": job.title,
+            "status": app.status
+        })
+
+    db.close()
+    return result
