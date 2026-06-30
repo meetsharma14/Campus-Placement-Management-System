@@ -102,7 +102,7 @@ uvicorn app.main:app --reload --port 8001
 Backend URL:
 
 ```bash
-http://127.0.0.1:8001
+https://campus-placement-management-system-ui9r.onrender.com
 ```
 
 Swagger UI:
