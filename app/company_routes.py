@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from app.database import SessionLocal
 from app.models.company import Company
 from app.utils.jwt_handler import create_token
-from passlib.hash import bcrypt
+from passlib.hash import argon2
 from app.models.job import Job
 from app.utils.auth import get_current_user, require_role
 router = APIRouter()
@@ -15,7 +15,7 @@ def register(company: dict):
     new_company = Company(
         company_name=company["company_name"],
         hr_email=company["hr_email"],
-        password=bcrypt.hash(company["password"])
+        password=argon2.hash(company["password"])
     )
 
     db.add(new_company)
@@ -37,7 +37,7 @@ def login(data: dict):
     if not company:
         return {"error": "Company not found"}
 
-    if not bcrypt.verify(data["password"], company.password):
+    if not argon2.verify(data["password"], company.password):
         return {"error": "Invalid password"}
 
     if not company.approved:
