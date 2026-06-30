@@ -58,21 +58,28 @@ def create_job(
 ):
     db = SessionLocal()
 
-    new_job = Job(
-        company_id=user["id"],   # fixed here
-        title=job["title"],
-        description=job["description"],
-        min_cgpa=job["min_cgpa"],
-        branch=job["branch"],
-        salary=job["salary"]
-    )
+    try:
+        new_job = Job(
+            company_id=user["id"],
+            title=job["title"],
+            description=job["description"],
+            min_cgpa=job["min_cgpa"],
+            branch=job["branch"],
+            salary=job["salary"]
+        )
 
-    db.add(new_job)
-    db.commit()
-    db.close()
+        db.add(new_job)
+        db.commit()
 
-    return {"message": "Job created successfully"}
+        return {"message": "Job created successfully"}
 
+    except Exception as e:
+        db.rollback()
+        print("JOB ERROR:", str(e))
+        return {"error": str(e)}
+
+    finally:
+        db.close()
 
 # Get All Jobs
 @router.get("/jobs")
