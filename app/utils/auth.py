@@ -1,16 +1,12 @@
-from fastapi import Header, HTTPException
-from app.utils.jwt_handler import verify_token
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from app.utils.jwt_handler import decode_token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
-def get_current_user(authorization: str = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=401,
-            detail="Token missing"
-        )
-
-    token = authorization.split(" ")[1]
-    payload = verify_token(token)
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = decode_token(token)
 
     if not payload:
         raise HTTPException(
@@ -22,6 +18,13 @@ def get_current_user(authorization: str = Header(None)):
 
 
 def require_role(role: str):
-    def role_checker(user=Header(None)):
-        return get_current_user
-    return role_checker
+    def wrapper(user=Depends(get_current_user)):
+        if user["role"] != role:
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied"
+            )
+
+        return user
+
+    return wrapper
