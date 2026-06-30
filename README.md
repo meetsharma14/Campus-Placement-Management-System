@@ -108,7 +108,7 @@ https://campus-placement-management-system-ui9r.onrender.com
 Swagger UI:
 
 ```bash
-http://127.0.0.1:8001/docs
+http://127.0.0.1:8001/docs 
 ```
 
 ---
@@ -130,7 +130,7 @@ streamlit run app.py
 Frontend URL:
 
 ```bash
-http://localhost:8501
+[http://localhost:8501](https://campus-placement-management-system-mvyk3pwn2rgcovf3mxcbxx.streamlit.app/)
 ```
 
 ---
