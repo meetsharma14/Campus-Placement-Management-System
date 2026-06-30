@@ -38,7 +38,9 @@ def register(student: dict):
         password = password[:72]
 
     # ✅ STEP 4: hash AFTER fix
-    hashed_password = bcrypt.hash(password)
+    from passlib.hash import argon2
+
+    hashed_password = argon2.hash(student["password"])
 
     new_student = Student(
         name=student["name"],
