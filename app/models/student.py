@@ -9,7 +9,4 @@ class Student(Base):
     name = Column(String)
     email = Column(String, unique=True)
     password = Column(String)
-    cgpa = Column(Float)
-    branch = Column(String)
-    graduation_year = Column(Integer)
-    resume_url = Column(String)
+    
