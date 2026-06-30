@@ -2,13 +2,11 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2-binary
-
 python-jose[cryptography]
-
-
-
 streamlit
 python-multipart
-
 python-dotenv
 requests
+
+passlib
+bcrypt
