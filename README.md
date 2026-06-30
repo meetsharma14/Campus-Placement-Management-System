@@ -42,7 +42,7 @@ A full-stack web application for managing campus placements built with **FastAPI
 * SQLAlchemy
 * PostgreSQL
 * JWT Authentication
-* Passlib (Password Hashing)
+* Passlib Argon2(Password Hashing)
 
 ### Frontend
 
