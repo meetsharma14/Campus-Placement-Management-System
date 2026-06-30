@@ -25,7 +25,7 @@ def register(student: dict):
 
         if existing_student:
             return {"error": "Email already exists"}
-
+        raw_password = student["password"][:72]
         new_student = Student(
             name=student["name"],
             email=student["email"],
