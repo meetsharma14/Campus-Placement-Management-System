@@ -18,24 +18,39 @@ router = APIRouter()
 def register(student: dict):
     db = SessionLocal()
 
-    try:
-        existing_student = db.query(Student).filter(
-            Student.email == student["email"]
-        ).first()
+    existing_student = db.query(Student).filter(
+        Student.email == student["email"]
+    ).first()
 
-        if existing_student:
-            return {"error": "Email already exists"}
-        raw_password = student["password"][:72]
-        new_student = Student(
-            name=student["name"],
-            email=student["email"],
-            password=hash_password(student["password"])
-        )
+    if existing_student:
+        db.close()
+        return {"error": "Email already exists"}
 
-        db.add(new_student)
-        db.commit()
+    # ✅ STEP 1: get password safely
+    password = str(student.get("password", ""))
 
-        return {"message": "Student registered successfully"}
+    # ✅ STEP 2: debug (IMPORTANT)
+    print("RAW PASSWORD:", password)
+    print("LENGTH:", len(password.encode("utf-8")))
+
+    # ✅ STEP 3: FIX (truncate before bcrypt)
+    if len(password.encode("utf-8")) > 72:
+        password = password[:72]
+
+    # ✅ STEP 4: hash AFTER fix
+    hashed_password = bcrypt.hash(password)
+
+    new_student = Student(
+        name=student["name"],
+        email=student["email"],
+        password=hashed_password
+    )
+
+    db.add(new_student)
+    db.commit()
+    db.close()
+
+    return {"message": "Student registered successfully"}
 
     except Exception as e:
         db.rollback()
