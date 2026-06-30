@@ -10,6 +10,7 @@ from app.utils.auth import get_current_user, require_role
 from app.utils.jwt_handler import create_token
 from app.models.job import Job
 from app.models.company import Company
+from app.auth import hash_password
 
 router = APIRouter()
 
