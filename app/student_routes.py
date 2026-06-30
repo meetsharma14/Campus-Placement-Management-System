@@ -66,7 +66,7 @@ def login(data: dict):
         Student.email == data["email"]
     ).first()
 
-    if not student or not bcrypt.verify(
+    if not student or not argon2.verify(
         data["password"],
         student.password
     ):
