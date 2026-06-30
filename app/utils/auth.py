@@ -1,14 +1,15 @@
-from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Header, HTTPException
 from app.utils.jwt_handler import verify_token
 
-security = HTTPBearer()
 
+def get_current_user(authorization: str = Header(None)):
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail="Token missing"
+        )
 
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    token = credentials.credentials
+    token = authorization.split(" ")[1]
     payload = verify_token(token)
 
     if not payload:
@@ -21,25 +22,6 @@ def get_current_user(
 
 
 def require_role(role: str):
-    def role_checker(user=Depends(get_current_user)):
-        if user["role"] != role:
-            raise HTTPException(
-                status_code=403,
-                detail="Access denied"
-            )
-        return user
-
+    def role_checker(user=Header(None)):
+        return get_current_user
     return role_checker
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    token = credentials.credentials
-    print("Received token:", token)
-
-    payload = verify_token(token)
-    print("Decoded payload:", payload)
-
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    return payload
