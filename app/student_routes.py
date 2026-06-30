@@ -8,6 +8,8 @@ import os
 from fastapi import Depends
 from app.utils.auth import get_current_user, require_role
 from app.utils.jwt_handler import create_token
+from app.models.job import Job
+from app.models.company import Company
 
 router = APIRouter()
 
@@ -15,14 +17,18 @@ router = APIRouter()
 def register(student: dict):
     db = SessionLocal()
 
+    existing_student = db.query(Student).filter(
+        Student.email == student["email"]
+    ).first()
+
+    if existing_student:
+        db.close()
+        return {"error": "Email already exists"}
 
     new_student = Student(
         name=student["name"],
         email=student["email"],
-        password=bcrypt.hash(student["password"]),
-        cgpa=student["cgpa"],
-        branch=student["branch"],
-        graduation_year=student["graduation_year"]
+        password=bcrypt.hash(student["password"])
     )
 
     db.add(new_student)
@@ -30,7 +36,6 @@ def register(student: dict):
     db.close()
 
     return {"message": "Student registered successfully"}
-
 
 @router.post("/students/login")
 def login(data: dict):
@@ -58,6 +63,29 @@ def login(data: dict):
         "token": token
     }
 
+@router.put("/students/profile")
+def update_profile(
+    data: dict,
+    user=Depends(require_role("student"))
+):
+    db = SessionLocal()
+
+    student = db.query(Student).filter(
+        Student.id == user["id"]
+    ).first()
+
+    if not student:
+        db.close()
+        return {"error": "Student not found"}
+
+    student.cgpa = data["cgpa"]
+    student.branch = data["branch"]
+    student.graduation_year = data["graduation_year"]
+
+    db.commit()
+    db.close()
+
+    return {"message": "Profile updated successfully"}
 
 @router.post("/resume/upload")
 def upload_resume(file: UploadFile,
@@ -107,14 +135,28 @@ def apply_job(
 def get_my_applications(student_id: str):
     db = SessionLocal()
 
-    applications = db.query(Application).filter(
-        Application.student_id == student_id
-    ).all()
-    
+    applications = (
+        db.query(Application, Job, Company)
+        .join(Job, Application.job_id == Job.id)
+        .join(Company, Job.company_id == Company.id)
+        .filter(Application.student_id == student_id)
+        .all()
+    )
+
+    result = []
+
+    for app, job, company in applications:
+        result.append({
+            "application_id": app.id,
+            "company_name": company.company_name,
+            "job_title": job.title,
+            "status": app.status
+        })
+
     db.close()
-    return applications
+    return result
 @router.get("/students/{student_id}")
-def get_student(student_id: int):
+def get_student(student_id: str):
     db = SessionLocal()
 
     student = db.query(Student).filter(
