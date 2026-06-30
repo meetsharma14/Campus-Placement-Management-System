@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from jose import jwt
 
-API_URL = "http://127.0.0.1:8001"
+API_URL = "https://campus-placement-management-system-ui9r.onrender.com"
 SECRET_KEY = "mysecretkey"
 
 
