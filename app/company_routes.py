@@ -79,6 +79,23 @@ def create_job(
 def get_jobs():
     db = SessionLocal()
 
-    jobs = db.query(Job).all()
+    jobs = (
+        db.query(Job, Company)
+        .join(Company, Job.company_id == Company.id)
+        .all()
+    )
+    result = []
 
-    return jobs
+    for job, company in jobs:
+        result.append({
+            "id": job.id,
+            "title": job.title,
+            "description": job.description,
+            "branch": job.branch,
+            "min_cgpa": job.min_cgpa,
+            "salary": job.salary,
+            "company_name": company.company_name
+        })
+
+    db.close()
+    return result
