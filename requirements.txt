@@ -3,10 +3,10 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 python-jose[cryptography]
+
+passlib[argon2]
+
 streamlit
 python-multipart
 python-dotenv
 requests
-
-passlib
-bcrypt
