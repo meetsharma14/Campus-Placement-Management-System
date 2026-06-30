@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File
 from app.database import SessionLocal
 from app.models.student import Student
 from app.models.application import Application
-from passlib.hash import bcrypt
+from passlib.hash import argon2
 import shutil
 import os
 from fastapi import Depends
