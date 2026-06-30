@@ -52,12 +52,6 @@ def register(student: dict):
 
     return {"message": "Student registered successfully"}
 
-    except Exception as e:
-        db.rollback()
-        return {"error": str(e)}
-
-    finally:
-        db.close()
 
 @router.post("/students/login")
 def login(data: dict):
