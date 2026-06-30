@@ -4,6 +4,18 @@ import requests
 API_URL = "https://campus-placement-management-system-ui9r.onrender.com"
 
 
+# ✅ SAFE JSON HANDLER
+def safe_json(res):
+    try:
+        return res.json()
+    except Exception:
+        return {
+            "error": "Server returned invalid response",
+            "status_code": res.status_code,
+            "text": res.text
+        }
+
+
 def show():
     st.header("Company Portal")
 
@@ -11,28 +23,21 @@ def show():
     if "company_logged_in" not in st.session_state:
         st.session_state["company_logged_in"] = False
 
-    # Always define token
     token = st.session_state.get("token", None)
 
     headers = {}
     if token:
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
+        headers = {"Authorization": f"Bearer {token}"}
 
     # Menu
     if st.session_state["company_logged_in"]:
-        option = st.selectbox(
-            "Choose",
-            ["Create Job"]
-        )
+        option = st.selectbox("Choose", ["Create Job"])
     else:
-        option = st.selectbox(
-            "Choose",
-            ["Register", "Login"]
-        )
+        option = st.selectbox("Choose", ["Register", "Login"])
 
-    # Register
+    # =========================
+    # REGISTER
+    # =========================
     if option == "Register":
         company_name = st.text_input("Company Name")
         hr_email = st.text_input("HR Email")
@@ -47,9 +52,12 @@ def show():
                     "password": password
                 }
             )
-            st.json(res.json())
 
-    # Login
+            st.json(safe_json(res))
+
+    # =========================
+    # LOGIN
+    # =========================
     elif option == "Login":
         hr_email = st.text_input("HR Email")
         password = st.text_input("Password", type="password")
@@ -63,7 +71,7 @@ def show():
                 }
             )
 
-            data = res.json()
+            data = safe_json(res)
 
             if "token" in data:
                 st.session_state["token"] = data["token"]
@@ -72,9 +80,11 @@ def show():
                 st.success("Login successful")
                 st.rerun()
             else:
-                st.error("Invalid credentials")
+                st.error(data.get("error", "Invalid credentials"))
 
-    # Create Job
+    # =========================
+    # CREATE JOB
+    # =========================
     elif option == "Create Job":
         title = st.text_input("Job Title")
         description = st.text_area("Description")
@@ -95,14 +105,13 @@ def show():
                 headers=headers
             )
 
-            st.json(res.json())
+            st.json(safe_json(res))
 
-    # Logout
-    # Sidebar logout
+    # =========================
+    # LOGOUT
+    # =========================
     if st.session_state["company_logged_in"]:
         if st.sidebar.button("Logout"):
             st.session_state.clear()
             st.success("Logged out successfully")
             st.rerun()
-
-
