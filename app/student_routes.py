@@ -18,42 +18,45 @@ router = APIRouter()
 def register(student: dict):
     db = SessionLocal()
 
-    existing_student = db.query(Student).filter(
-        Student.email == student["email"]
-    ).first()
+    try:
+        existing_student = db.query(Student).filter(
+            Student.email == student["email"]
+        ).first()
 
-    if existing_student:
+        if existing_student:
+            return {"error": "Email already exists"}
+
+        # ✅ SAFE PASSWORD
+        password = str(student.get("password", ""))
+
+        print("RAW PASSWORD:", password)
+        print("LENGTH:", len(password.encode("utf-8")))
+
+        # (optional safety)
+        if len(password.encode("utf-8")) > 72:
+            password = password[:72]
+
+        # ✅ FIX: use corrected password here
+        hashed_password = argon2.hash(password)
+
+        new_student = Student(
+            name=student["name"],
+            email=student["email"],
+            password=hashed_password
+        )
+
+        db.add(new_student)
+        db.commit()
+
+        return {"message": "Student registered successfully"}
+
+    except Exception as e:
+        db.rollback()
+        print("REGISTER ERROR:", str(e))
+        return {"error": str(e)}
+
+    finally:
         db.close()
-        return {"error": "Email already exists"}
-
-    # ✅ STEP 1: get password safely
-    password = str(student.get("password", ""))
-
-    # ✅ STEP 2: debug (IMPORTANT)
-    print("RAW PASSWORD:", password)
-    print("LENGTH:", len(password.encode("utf-8")))
-
-    # ✅ STEP 3: FIX (truncate before bcrypt)
-    if len(password.encode("utf-8")) > 72:
-        password = password[:72]
-
-    # ✅ STEP 4: hash AFTER fix
-    from passlib.hash import argon2
-
-    hashed_password = argon2.hash(student["password"])
-
-    new_student = Student(
-        name=student["name"],
-        email=student["email"],
-        password=hashed_password
-    )
-
-    db.add(new_student)
-    db.commit()
-    db.close()
-
-    return {"message": "Student registered successfully"}
-
 
 @router.post("/students/login")
 def login(data: dict):
